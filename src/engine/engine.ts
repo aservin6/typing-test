@@ -12,9 +12,25 @@ export class TypingEngine {
     return this.state;
   }
 
-  private handleCharacter(input: string) {
+  public start() {
+    this.state.status = "running";
+    this.state.startTime = Date.now();
+  }
+
+  public finish() {
+    this.state.status = "finished";
+    this.state.endTime = Date.now();
+  }
+
+  public reset() {
+    this.state.status = "idle";
+    this.state.startTime = null;
+    this.state.endTime = null;
+  }
+
+  public handleCharacter(input: string) {
     if (this.state.status === "idle") {
-      this.state.status = "running";
+      this.start();
     } else if (this.state.status === "finished") {
       return;
     }
@@ -23,12 +39,23 @@ export class TypingEngine {
       this.state.startTime = Date.now();
     }
 
+    const currentIndex = this.state.typedCharacters.length;
+    const expectedChar = this.state.targetText[currentIndex];
+    const isCorrect = input === expectedChar;
+
     this.state.typedCharacters.push({
       char: input,
-      result:
-        input === this.state.targetText[this.state.typedCharacters.length]
-          ? "correct"
-          : "incorrect",
+      result: isCorrect ? "correct" : "incorrect",
     });
+
+    if (isCorrect) {
+      this.state.correctCount++;
+    } else {
+      this.state.incorrectCount++;
+    }
+
+    if (this.state.targetText.length === this.state.typedCharacters.length) {
+      this.finish();
+    }
   }
 }

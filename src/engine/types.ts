@@ -10,7 +10,7 @@ export interface EngineState {
   endTime: number | null;
 }
 
-interface TypedCharacter {
+export interface TypedCharacter {
   char: string;
   result: "correct" | "incorrect";
 }
