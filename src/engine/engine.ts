@@ -1,3 +1,5 @@
+import { DEFAULT_TIME_LIMIT } from "./constants";
+import { getElapsedTime } from "./scoring";
 import { createInitialState } from "./state";
 import { EngineState } from "./types";
 
@@ -26,8 +28,16 @@ export class TypingEngine {
     this.state = createInitialState(this.state.targetText);
   }
 
+  public checkTime() {
+    if (this.isTimeUp()) this.finish();
+  }
+
   public handleCharacter(input: string) {
     if (!this.canAcceptInput()) return;
+
+    if (this.state.mode === "timed") {
+      this.state.timeLimit = DEFAULT_TIME_LIMIT;
+    }
 
     if (this.state.status === "idle") {
       this.start();
@@ -38,7 +48,9 @@ export class TypingEngine {
     this.addTypedCharacter(input, result);
     this.updateCounts(result);
 
-    this.shouldFinish();
+    if (result === "incorrect" && this.state.mode === "strict") {
+      this.finish();
+    }
 
     if (this.isComplete(result)) {
       this.finish();
@@ -63,8 +75,6 @@ export class TypingEngine {
     } else {
       this.state.incorrectCount--;
     }
-
-    this.shouldFinish();
   }
 
   private canAcceptInput(): boolean {
@@ -98,14 +108,14 @@ export class TypingEngine {
     return isLastChar && result === "correct";
   }
 
-  private shouldFinish(): boolean {
-    if (this.state.typedCharacters.length !== this.state.targetText.length) {
-      return false;
+  private isTimeUp(): boolean {
+    if (this.state.mode !== "timed") return false;
+    if (this.state.startTime == null) return false;
+
+    if (this.state.timeLimit) {
+      const elapsedSeconds = getElapsedTime(this.state) / 1000;
+      if (elapsedSeconds >= this.state.timeLimit) return true;
     }
-
-    const last =
-      this.state.typedCharacters[this.state.typedCharacters.length - 1];
-
-    return last?.result === "correct";
+    return false;
   }
 }

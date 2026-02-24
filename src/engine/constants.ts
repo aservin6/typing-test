@@ -1,1 +1,1 @@
-const DEFAULT_TIME_LIMIT = 30;
+export const DEFAULT_TIME_LIMIT = 30;

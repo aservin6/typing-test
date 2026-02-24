@@ -7,7 +7,7 @@ export function createInitialState(targetText: string): EngineState {
     typedCharacters: [],
     correctCount: 0,
     incorrectCount: 0,
-    mode: "text",
+    mode: "standard",
     startTime: null,
     endTime: null,
   };

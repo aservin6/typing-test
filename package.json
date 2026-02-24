@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "test": "npx tsx src/engine/test.ts"
+    "test": "vitest"
   },
   "devDependencies": {
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "vitest": "^4.0.18"
   }
 }
