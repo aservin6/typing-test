@@ -1,13 +1,16 @@
-import { DEFAULT_TIME_LIMIT } from "./constants";
 import { getElapsedTime } from "./scoring";
 import { createInitialState } from "./state";
 import { EngineState } from "./types";
+import { TypingModeStrategy } from "./modes/TypingModeStrategy";
+import { EngineContext } from "./EngineContext";
 
-export class TypingEngine {
+export class TypingEngine implements EngineContext {
   private state: EngineState;
+  private strategy: TypingModeStrategy;
 
-  public constructor(targetText: string) {
+  constructor(targetText: string, strategy: TypingModeStrategy) {
     this.state = createInitialState(targetText);
+    this.strategy = strategy;
   }
 
   public getState(): EngineState {
@@ -29,15 +32,11 @@ export class TypingEngine {
   }
 
   public checkTime() {
-    if (this.isTimeUp()) this.finish();
+    this.strategy.onTick(this);
   }
 
   public handleCharacter(input: string) {
     if (!this.canAcceptInput()) return;
-
-    if (this.state.mode === "timed") {
-      this.state.timeLimit = DEFAULT_TIME_LIMIT;
-    }
 
     if (this.state.status === "idle") {
       this.start();
@@ -48,13 +47,7 @@ export class TypingEngine {
     this.addTypedCharacter(input, result);
     this.updateCounts(result);
 
-    if (result === "incorrect" && this.state.mode === "strict") {
-      this.finish();
-    }
-
-    if (this.isComplete(result)) {
-      this.finish();
-    }
+    this.strategy.onCharacter(this, result);
   }
 
   public handleBackspace() {
@@ -102,20 +95,17 @@ export class TypingEngine {
     }
   }
 
-  private isComplete(result: "correct" | "incorrect"): boolean {
+  public isComplete(result: "correct" | "incorrect"): boolean {
     const isLastChar =
       this.state.typedCharacters.length === this.state.targetText.length;
     return isLastChar && result === "correct";
   }
 
-  private isTimeUp(): boolean {
-    if (this.state.mode !== "timed") return false;
+  public isTimeUp(): boolean {
     if (this.state.startTime == null) return false;
+    if (!this.state.timeLimit) return false;
 
-    if (this.state.timeLimit) {
-      const elapsedSeconds = getElapsedTime(this.state) / 1000;
-      if (elapsedSeconds >= this.state.timeLimit) return true;
-    }
-    return false;
+    const elapsedSeconds = getElapsedTime(this.state) / 1000;
+    return elapsedSeconds >= this.state.timeLimit;
   }
 }

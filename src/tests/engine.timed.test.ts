@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { TypingEngine } from "../engine/engine";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as scoring from "../engine/scoring.ts";
+import { TypingEngine } from "../engine/engine";
+import { TimedMode } from "../engine/modes/TimedMode.ts";
 
-describe("TypingEngine - Timed Mode", () => {
+describe("TypingEngine - TimedMode", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.spyOn(Date, "now").mockImplementation(() => 0);
   });
 
   afterEach(() => {
@@ -13,9 +13,8 @@ describe("TypingEngine - Timed Mode", () => {
     vi.useRealTimers();
   });
 
-  it("starts timer on first character input", () => {
-    const engine = new TypingEngine("hello");
-    engine.getState().mode = "timed";
+  it("starts running on first character input", () => {
+    const engine = new TypingEngine("hello", new TimedMode(30));
 
     engine.handleCharacter("h");
 
@@ -25,26 +24,16 @@ describe("TypingEngine - Timed Mode", () => {
     expect(state.startTime).not.toBeNull();
   });
 
-  it("finishes when time limit is reached", () => {
-    const engine = new TypingEngine("hello world");
-    engine.getState().mode = "timed";
+  it("sets timeLimit on first input", () => {
+    const engine = new TypingEngine("hello", new TimedMode(30));
 
     engine.handleCharacter("h");
 
-    // simulate 30 seconds passing
-    vi.spyOn(scoring, "getElapsedTime").mockReturnValue(30000);
-
-    engine.checkTime();
-
-    const state = engine.getState();
-
-    expect(state.status).toBe("finished");
-    expect(state.endTime).not.toBeNull();
+    expect(engine.getState().timeLimit).toBe(30);
   });
 
   it("does not finish before time limit", () => {
-    const engine = new TypingEngine("hello world");
-    engine.getState().mode = "timed";
+    const engine = new TypingEngine("hello world", new TimedMode(30));
 
     engine.handleCharacter("h");
 
@@ -55,9 +44,23 @@ describe("TypingEngine - Timed Mode", () => {
     expect(engine.getState().status).toBe("running");
   });
 
-  it("does not allow input after time expires", () => {
-    const engine = new TypingEngine("hello");
-    engine.getState().mode = "timed";
+  it("finishes when time limit is reached", () => {
+    const engine = new TypingEngine("hello world", new TimedMode(30));
+
+    engine.handleCharacter("h");
+
+    vi.spyOn(scoring, "getElapsedTime").mockReturnValue(30000);
+
+    engine.checkTime();
+
+    const state = engine.getState();
+
+    expect(state.status).toBe("finished");
+    expect(state.endTime).not.toBeNull();
+  });
+
+  it("does not accept input after time expires", () => {
+    const engine = new TypingEngine("hello", new TimedMode(30));
 
     engine.handleCharacter("h");
 
