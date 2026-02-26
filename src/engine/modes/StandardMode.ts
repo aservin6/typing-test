@@ -1,5 +1,5 @@
-import { EngineContext } from "../EngineContext";
 import { TypingModeStrategy } from "./TypingModeStrategy";
+import { EngineContext } from "../context/EngineContext";
 
 export class StandardMode implements TypingModeStrategy {
   // Engine stops once all words have been typed

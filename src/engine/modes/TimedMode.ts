@@ -1,4 +1,4 @@
-import { EngineContext } from "../EngineContext";
+import { EngineContext } from "../context/EngineContext";
 import { TypingModeStrategy } from "./TypingModeStrategy";
 
 export class TimedMode implements TypingModeStrategy {
