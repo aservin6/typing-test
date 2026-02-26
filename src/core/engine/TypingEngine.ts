@@ -1,7 +1,7 @@
+import type { EngineContext } from "./context/EngineContext";
+import type { TypingModeStrategy } from "./modes";
 import { createInitialState } from "./state";
-import { EngineState } from "./types";
-import { TypingModeStrategy } from "./modes/TypingModeStrategy";
-import { EngineContext } from "./context/EngineContext";
+import type { EngineState } from "./types";
 
 export class TypingEngine implements EngineContext {
   private state: EngineState;

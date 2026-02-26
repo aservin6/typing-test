@@ -1,4 +1,4 @@
-import { EngineState } from "./types";
+import type { EngineState } from "./types";
 
 export function getElapsedTime(state: EngineState): number {
   if (!state.startTime) return 0;

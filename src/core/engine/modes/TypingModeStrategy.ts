@@ -1,4 +1,4 @@
-import { EngineContext } from "../context/EngineContext";
+import type { EngineContext } from "../context/EngineContext";
 
 // Interface for each Typing Mode
 export interface TypingModeStrategy {
