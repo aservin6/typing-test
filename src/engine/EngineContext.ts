@@ -1,8 +1,8 @@
 import { EngineState } from "./types";
 
+// Minimal Context for Engine Modes
 export interface EngineContext {
-  finish(): void;
   isComplete(result: "correct" | "incorrect"): boolean;
-  isTimeUp(): boolean;
   getState(): EngineState;
+  getElapsedTime(): number;
 }

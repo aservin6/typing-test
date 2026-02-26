@@ -2,10 +2,16 @@ import { EngineContext } from "../EngineContext";
 import { TypingModeStrategy } from "./TypingModeStrategy";
 
 export class StandardMode implements TypingModeStrategy {
-  onCharacter(engine: EngineContext, result: "correct" | "incorrect") {
-    if (engine.isComplete(result)) {
-      engine.finish();
-    }
+  // Engine stops once all words have been typed
+  shouldFinishOnCharacter(
+    engine: EngineContext,
+    result: "correct" | "incorrect",
+  ) {
+    return engine.isComplete(result);
   }
-  onTick() {}
+
+  // No tick to finish() logic needed for non timed mode
+  shouldFinishOnTick() {
+    return false;
+  }
 }

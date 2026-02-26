@@ -1,20 +1,18 @@
-import { DEFAULT_TIME_LIMIT } from "../constants";
-import { TypingEngine } from "../engine";
 import { EngineContext } from "../EngineContext";
 import { TypingModeStrategy } from "./TypingModeStrategy";
 
 export class TimedMode implements TypingModeStrategy {
-  constructor(private timeLimit = DEFAULT_TIME_LIMIT) {}
-  onCharacter(engine: EngineContext, result: "correct" | "incorrect") {
-    const state = engine.getState();
-    if (!state.timeLimit) {
-      state.timeLimit = this.timeLimit;
-    }
+  // Needs a timeLimitMs for construction
+  constructor(private readonly timeLimitMs: number) {}
+
+  // Engine doesn't stop until time runs out, thus no finish logic
+  shouldFinishOnCharacter() {
+    return false;
   }
 
-  onTick(engine: TypingEngine) {
-    if (engine.isTimeUp()) {
-      engine.finish();
-    }
+  // Tick to check if time has exceeded timeLimitMs
+  // then finish()
+  shouldFinishOnTick(engine: EngineContext) {
+    return engine.getElapsedTime() >= this.timeLimitMs;
   }
 }
