@@ -5,7 +5,6 @@ export interface EngineState {
   correctCount: number;
   incorrectCount: number;
   mode: Mode;
-  timeLimit?: number | null;
   startTime: number | null;
   endTime: number | null;
 }
@@ -15,4 +14,4 @@ export interface TypedCharacter {
   result: "correct" | "incorrect";
 }
 
-type Mode = "standard" | "strict" | "timed";
+export type Mode = "standard" | "strict" | "timed";

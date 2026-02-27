@@ -11,6 +11,7 @@ export class TypingEngine implements EngineContext {
   constructor(targetText: string, strategy: TypingModeStrategy) {
     this.state = createInitialState(targetText);
     this.strategy = strategy;
+    this.state.mode = strategy.getModeName();
   }
 
   // =========================
@@ -19,6 +20,13 @@ export class TypingEngine implements EngineContext {
 
   public getState(): EngineState {
     return this.state;
+  }
+
+  public getTimeLimit(): number | null {
+    if ("getTimeLimit" in this.strategy) {
+      return this.strategy.getTimeLimit?.() ?? null;
+    }
+    return null;
   }
 
   public getElapsedTime(): number {

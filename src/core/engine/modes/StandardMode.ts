@@ -1,4 +1,5 @@
 import type { EngineContext } from "../context/EngineContext";
+import type { Mode } from "../types";
 import type { TypingModeStrategy } from "./TypingModeStrategy";
 
 export class StandardMode implements TypingModeStrategy {
@@ -13,5 +14,8 @@ export class StandardMode implements TypingModeStrategy {
   // No tick to finish() logic needed for non timed mode
   shouldFinishOnTick() {
     return false;
+  }
+  getModeName(): Mode {
+    return "standard";
   }
 }

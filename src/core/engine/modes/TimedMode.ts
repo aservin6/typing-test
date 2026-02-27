@@ -1,4 +1,5 @@
 import type { EngineContext } from "../context/EngineContext";
+import type { Mode } from "../types";
 import type { TypingModeStrategy } from "./TypingModeStrategy";
 
 export class TimedMode implements TypingModeStrategy {
@@ -14,5 +15,11 @@ export class TimedMode implements TypingModeStrategy {
   // then finish()
   shouldFinishOnTick(engine: EngineContext) {
     return engine.getElapsedTime() >= this.timeLimitMs;
+  }
+  getModeName(): Mode {
+    return "timed";
+  }
+  getTimeLimit(): number {
+    return this.timeLimitMs;
   }
 }

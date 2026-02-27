@@ -1,4 +1,5 @@
 import type { EngineContext } from "../context/EngineContext";
+import type { Mode } from "../types";
 
 // Interface for each Typing Mode
 export interface TypingModeStrategy {
@@ -8,4 +9,6 @@ export interface TypingModeStrategy {
   ): boolean;
 
   shouldFinishOnTick(engine: EngineContext): boolean;
+  getModeName(): Mode;
+  getTimeLimit?(): number | null;
 }
