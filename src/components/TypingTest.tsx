@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from "react";
 import { TimedMode } from "../core/engine/modes/TimedMode";
 import { TypingEngine } from "../core/engine/TypingEngine";
 
 const text = "hello world";
-
+const textArray = text.split("");
 export function TypingTest() {
   const engine = useMemo(() => {
     return new TypingEngine(text, new TimedMode(5000));
@@ -18,6 +24,11 @@ export function TypingTest() {
     setState({ ...engine.getState() });
   }
 
+  function handleInput(e: ChangeEvent<HTMLTextAreaElement>) {
+    engine.handleCharacter(e.target.value);
+    setState({ ...engine.getState() });
+  }
+
   useEffect(() => {
     const interval = setInterval(() => {
       engine.checkTime();
@@ -29,8 +40,13 @@ export function TypingTest() {
 
   return (
     <div className="min-h-screen bg-neutral-800">
-      <div className="text-red-400 font-bold text-5xl">
-        target: {state.targetText}
+      <div className="relative text-red-400 font-bold text-5xl">
+        <textarea onChange={handleInput} className="relative z-50"></textarea>
+        <div className="absolute top-0 left-0 text-neutral-500">
+          {textArray.map((char: string) => {
+            return <span>{char}</span>;
+          })}
+        </div>
       </div>
 
       <div className="text-red-400 font-bold text-5xl">
@@ -46,7 +62,12 @@ export function TypingTest() {
         time left:{" "}
         {timeLimit &&
           (timeLimit / 1000 - engine.getElapsedTime() / 1000).toFixed(2)}
-        s
+      </div>
+      <div className="text-red-400 font-bold text-5xl">
+        typed characters:{" "}
+        {state.typedCharacters.map((c) => {
+          return <div>{c.char}</div>;
+        })}
       </div>
 
       <button
