@@ -3,20 +3,25 @@ import { TimedMode } from "../core/engine/modes/TimedMode";
 import { TypingEngine } from "../core/engine/TypingEngine";
 
 const text = "hello world";
-const textArray = text.split("");
 
 export function TypingTest() {
   const engine = useMemo(() => {
     return new TypingEngine(text, new TimedMode(60000));
   }, []);
 
-  const timeLimit = engine.getTimeLimit();
-
   const [state, setState] = useState(engine.getState());
 
-  function handleStart() {
-    if (!state.startTime) engine.start();
+  const timeLimit = engine.getTimeLimit();
+
+  function sync() {
     setState({ ...engine.getState() });
+  }
+
+  function handleStart() {
+    if (state.status === "idle") {
+      engine.start();
+      sync();
+    }
   }
 
   function handleInput(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -28,24 +33,22 @@ export function TypingTest() {
       e.key === "Escape"
     ) {
       return;
-    } else if (e.key === "Backspace") {
-      engine.handleBackspace();
-      setState({ ...engine.getState() });
-    } else {
-      engine.handleCharacter(e.key);
-      setState({ ...engine.getState() });
     }
 
-    console.log(state.typedCharacters);
+    if (e.key === "Backspace") {
+      engine.handleBackspace();
+    } else if (e.key.length === 1) {
+      // Only accept printable characters
+      engine.handleCharacter(e.key);
+    }
+    sync();
   }
-
-  function displayWords() {}
 
   useEffect(() => {
     if (state.status === "running") {
       const interval = setInterval(() => {
         engine.checkTime();
-        setState({ ...engine.getState() });
+        sync();
       }, 100);
 
       return () => clearInterval(interval);
@@ -53,36 +56,63 @@ export function TypingTest() {
   }, [engine, state.status]);
 
   return (
-    <div className="min-h-screen bg-neutral-800 font-mono">
-      <div className="relative font-bold text-5xl">
+    <div className="min-h-screen bg-neutral-800 font-mono flex flex-col items-center justify-center gap-8">
+      {/* Typing Area */}
+      <div className="relative text-5xl font-bold">
+        {/* Hidden textarea */}
         <textarea
           onKeyDown={handleInput}
-          className="relative text-transparent z-50"
-        ></textarea>
-        <div className="absolute top-0 left-0 text-neutral-500">
-          {textArray.map((c, i) => {
-            return <span>{c}</span>;
+          className="absolute inset-0 opacity-0 z-50"
+          autoFocus
+        />
+        {/* Rendered Text */}
+        <div className="flex flex-wrap">
+          {state.targetText.split("").map((char, index) => {
+            const charState = engine.getCharState(index);
+            const isCurrent = index === engine.getCurrentIndex();
+
+            let colorClass = "text-neutral-500";
+
+            if (charState === "correct") {
+              colorClass = "text-white";
+            } else if (charState === "incorrect") {
+              colorClass = "text-red-500";
+            }
+
+            return (
+              <span key={index} className={`relative ${colorClass}`}>
+                {char === " " ? "\u00A0" : char}
+
+                {/* Cursor */}
+                {isCurrent && (
+                  <span className="absolute left-0 top-0 w-0.5 h-full bg-white animate-pulse" />
+                )}
+              </span>
+            );
           })}
-        </div>
+        </div>{" "}
       </div>
 
-      <div className="text-red-400 font-bold text-5xl">
+      {/* Debug Info */}
+      <div className="text-red-400 font-bold text-xl">
         status: {state.status}
       </div>
 
-      <div className="text-red-400 font-bold text-5xl">mode: {state.mode}</div>
+      <div className="text-red-400 font-bold text-xl">mode: {state.mode}</div>
 
-      <div className="text-red-400 font-bold text-5xl">
+      <div className="text-red-400 font-bold text-xl">
         time limit: {timeLimit && timeLimit / 1000}
       </div>
-      <div className="text-red-400 font-bold text-5xl">
+
+      <div className="text-red-400 font-bold text-xl">
         time left:{" "}
         {timeLimit &&
           (timeLimit / 1000 - engine.getElapsedTime() / 1000).toFixed(2)}
       </div>
+
       <button
         onClick={handleStart}
-        className="bg-blue-500 p-3 text-white cursor-pointer"
+        className="bg-blue-500 px-6 py-3 text-white cursor-pointer rounded"
       >
         Start
       </button>

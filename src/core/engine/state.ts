@@ -4,7 +4,9 @@ export function createInitialState(targetText: string): EngineState {
   return {
     status: "idle",
     targetText,
-    typedCharacters: [],
+    currentWordIndex: 0,
+    currentCharIndex: 0,
+    input: "",
     correctCount: 0,
     incorrectCount: 0,
     mode: "standard",

@@ -15,11 +15,28 @@ export class TypingEngine implements EngineContext {
   }
 
   // =========================
-  // Context Methods
+  // Public Getters
   // =========================
 
   public getState(): EngineState {
     return this.state;
+  }
+
+  public getInput(): string {
+    return this.state.input;
+  }
+
+  public getCurrentIndex(): number {
+    return this.state.input.length;
+  }
+
+  public getCharState(index: number): "pending" | "correct" | "incorrect" {
+    if (index >= this.state.input.length) return "pending";
+
+    const expected = this.state.targetText[index];
+    const actual = this.state.input[index];
+
+    return expected === actual ? "correct" : "incorrect";
   }
 
   public getTimeLimit(): number | null {
@@ -34,15 +51,8 @@ export class TypingEngine implements EngineContext {
     return Date.now() - this.startTime;
   }
 
-  public isComplete(result: "correct" | "incorrect"): boolean {
-    const isLastChar =
-      this.state.typedCharacters.length === this.state.targetText.length;
-
-    return isLastChar && result === "correct";
-  }
-
   // =========================
-  // Engine Lifecycle
+  // Lifecycle
   // =========================
 
   public start() {
@@ -70,33 +80,27 @@ export class TypingEngine implements EngineContext {
   // Input Handling
   // =========================
 
-  public handleCharacter(input: string) {
-    if (!this.canAcceptInput()) return;
+  public handleCharacter(char: string) {
+    if (this.state.status === "finished") return;
 
     if (this.state.status === "idle") {
       this.start();
     }
 
-    const result = this.validateCharacter(input);
-    this.addTypedCharacter(input, result);
-    this.updateCounts(result);
+    // Ignore input beyond target length
+    if (this.state.input.length > this.state.targetText.length) return;
 
-    if (this.strategy.shouldFinishOnCharacter(this, result)) {
+    this.state.input += char;
+
+    if (this.strategy.shouldFinishOnCharacter(this, "correct")) {
       this.finish();
     }
   }
 
   public handleBackspace() {
-    if (this.state.typedCharacters.length === 0) return;
+    if (this.state.input.length === 0) return;
 
-    const lastTypedCharacter = this.state.typedCharacters.pop();
-    if (!lastTypedCharacter) return;
-
-    if (lastTypedCharacter.result === "correct") {
-      this.state.correctCount--;
-    } else {
-      this.state.incorrectCount--;
-    }
+    this.state.input = this.state.input.slice(0, -1);
 
     if (this.state.status === "finished") {
       this.state.status = "running";
@@ -105,28 +109,27 @@ export class TypingEngine implements EngineContext {
   }
 
   // =========================
-  // Internal Helpers
+  // Derived Stats
   // =========================
 
-  private canAcceptInput(): boolean {
-    return this.state.status !== "finished";
-  }
-
-  private validateCharacter(input: string): "correct" | "incorrect" {
-    const currentIndex = this.state.typedCharacters.length;
-    const expectedChar = this.state.targetText[currentIndex];
-    return input === expectedChar ? "correct" : "incorrect";
-  }
-
-  private addTypedCharacter(char: string, result: "correct" | "incorrect") {
-    this.state.typedCharacters.push({ char, result });
-  }
-
-  private updateCounts(result: "correct" | "incorrect") {
-    if (result === "correct") {
-      this.state.correctCount++;
-    } else {
-      this.state.incorrectCount++;
+  public getCorrectCount(): number {
+    let count = 0;
+    for (let i = 0; i < this.state.input.length; i++) {
+      if (this.state.input[i] === this.state.targetText[i]) {
+        count++;
+      }
     }
+    return count;
+  }
+
+  public getIncorrectCount(): number {
+    return this.state.input.length - this.getCorrectCount();
+  }
+
+  public isComplete(): boolean {
+    return (
+      this.state.input.length === this.state.targetText.length &&
+      this.getIncorrectCount() === 0
+    );
   }
 }
