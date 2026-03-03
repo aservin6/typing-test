@@ -90,6 +90,13 @@ export class TypingEngine implements EngineContext {
     // Ignore input beyond target length
     if (this.state.input.length > this.state.targetText.length) return;
 
+    if (
+      char !== this.state.targetText.at(this.getCurrentIndex()) &&
+      this.strategy.shouldFinishOnCharacter(this, "incorrect")
+    ) {
+      this.finish();
+    }
+
     this.state.input += char;
 
     if (this.strategy.shouldFinishOnCharacter(this, "correct")) {

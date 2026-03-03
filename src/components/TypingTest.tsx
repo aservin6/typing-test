@@ -1,27 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { TimedMode } from "../core/engine/modes/TimedMode";
 import { TypingEngine } from "../core/engine/TypingEngine";
+import { ModeSelect } from "./ModeSelect";
+import { StandardMode, StrictMode } from "../core/engine/modes";
 
 const text = "hello world";
 
 export function TypingTest() {
+  const [mode, setMode] = useState("standard");
   const engine = useMemo(() => {
-    return new TypingEngine(text, new TimedMode(60000));
-  }, []);
+    switch (mode) {
+      case "timed":
+        return new TypingEngine(text, new TimedMode(30000));
+      case "strict":
+        return new TypingEngine(text, new StrictMode());
+      default:
+        return new TypingEngine(text, new StandardMode());
+    }
+  }, [mode]);
 
   const [state, setState] = useState(engine.getState());
-
   const timeLimit = engine.getTimeLimit();
 
   function sync() {
     setState({ ...engine.getState() });
-  }
-
-  function handleStart() {
-    if (state.status === "idle") {
-      engine.start();
-      sync();
-    }
   }
 
   function handleInput(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -44,6 +46,10 @@ export function TypingTest() {
     sync();
   }
 
+  function handleModeChange(mode: string) {
+    setMode(mode);
+  }
+
   useEffect(() => {
     if (state.status === "running") {
       const interval = setInterval(() => {
@@ -53,7 +59,7 @@ export function TypingTest() {
 
       return () => clearInterval(interval);
     }
-  }, [engine, state.status]);
+  }, [engine, state.status, mode]);
 
   return (
     <div className="min-h-screen bg-neutral-800 font-mono flex flex-col items-center justify-center gap-8">
@@ -98,24 +104,14 @@ export function TypingTest() {
         status: {state.status}
       </div>
 
-      <div className="text-red-400 font-bold text-xl">mode: {state.mode}</div>
-
-      <div className="text-red-400 font-bold text-xl">
-        time limit: {timeLimit && timeLimit / 1000}
-      </div>
+      <div className="text-red-400 font-bold text-xl">mode: {mode}</div>
 
       <div className="text-red-400 font-bold text-xl">
         time left:{" "}
         {timeLimit &&
           (timeLimit / 1000 - engine.getElapsedTime() / 1000).toFixed(2)}
       </div>
-
-      <button
-        onClick={handleStart}
-        className="bg-blue-500 px-6 py-3 text-white cursor-pointer rounded"
-      >
-        Start
-      </button>
+      <ModeSelect onChange={handleModeChange} mode={mode} />
     </div>
   );
 }
