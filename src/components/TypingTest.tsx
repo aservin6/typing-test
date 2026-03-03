@@ -4,7 +4,8 @@ import { TypingEngine } from "../core/engine/TypingEngine";
 import { ModeSelect } from "./ModeSelect";
 import { StandardMode, StrictMode } from "../core/engine/modes";
 
-const text = "hello world";
+const text =
+  "heat courage foreigner performer dependence achievement instrument sustain environment critical open legend exhibition mind dome glasses monstrous spare couple conspiracy map hardware coerce cross halt ring calf nap sister tone boy crusade snake embark wall redeem candidate contraction ban rotation live cinema jury";
 
 export function TypingTest() {
   const [mode, setMode] = useState("standard");
@@ -72,7 +73,7 @@ export function TypingTest() {
           autoFocus
         />
         {/* Rendered Text */}
-        <div className="flex flex-wrap">
+        <div className="flex flex-wrap max-w-5xl text-3xl break-keep whitespace-break-spaces font-semibold leading-relaxed tracking-wider custom-font">
           {state.targetText.split("").map((char, index) => {
             const charState = engine.getCharState(index);
             const isCurrent = index === engine.getCurrentIndex();

@@ -107,12 +107,11 @@ export class TypingEngine implements EngineContext {
   public handleBackspace() {
     if (this.state.input.length === 0) return;
 
-    this.state.input = this.state.input.slice(0, -1);
-
     if (this.state.status === "finished") {
-      this.state.status = "running";
-      this.state.endTime = null;
+      return;
     }
+
+    this.state.input = this.state.input.slice(0, -1);
   }
 
   // =========================
@@ -136,7 +135,8 @@ export class TypingEngine implements EngineContext {
   public isComplete(): boolean {
     return (
       this.state.input.length === this.state.targetText.length &&
-      this.getIncorrectCount() === 0
+      this.state.input.at(this.getCurrentIndex()) ===
+        this.state.targetText.at(this.getCurrentIndex())
     );
   }
 }

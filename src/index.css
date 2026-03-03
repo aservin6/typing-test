@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+.custom-font {
+  font-family: "Victor Mono Variable", monospace;
+}
