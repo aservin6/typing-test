@@ -3,9 +3,11 @@ import { TimedMode } from "../core/engine/modes/TimedMode";
 import { TypingEngine } from "../core/engine/TypingEngine";
 import { ModeSelect } from "./ModeSelect";
 import { StandardMode, StrictMode } from "../core/engine/modes";
+import transformText from "../utils/transform-text";
 
-const text =
-  "heat courage foreigner performer dependence achievement instrument sustain environment critical open legend exhibition mind dome glasses monstrous spare couple conspiracy map hardware coerce cross halt ring calf nap sister tone boy crusade snake embark wall redeem candidate contraction ban rotation live cinema jury";
+const text = "hello world";
+const transformedText = transformText(text);
+console.log(transformedText);
 
 export function TypingTest() {
   const [mode, setMode] = useState("standard");
