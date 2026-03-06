@@ -35,16 +35,3 @@ export default function transformText(text: string) {
   }
   return textArray;
 }
-
-// splitText.forEach((char, index) => {
-//   if (char === " ") {
-//     textArray.push({ type: "space" });
-//     wordIndex++;
-//     characters = [];
-//   } else {
-//     characters.push(char);
-//     if (splitText.at(index + 1) === " " || splitText.length === index + 1) {
-//       textArray.push({ type: "word", characters, wordIndex });
-//     }
-//   }
-// });
