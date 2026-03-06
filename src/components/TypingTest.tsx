@@ -4,10 +4,11 @@ import { TypingEngine } from "../core/engine/TypingEngine";
 import { ModeSelect } from "./ModeSelect";
 import { StandardMode, StrictMode } from "../core/engine/modes";
 import transformText from "../utils/transform-text";
+import type { TransformedText } from "../types/types";
 
 const text = "hello world";
-const transformedText = transformText(text);
-console.log(transformedText);
+const textArray = transformText(text);
+console.log(textArray);
 
 export function TypingTest() {
   const [mode, setMode] = useState("standard");
@@ -53,6 +54,7 @@ export function TypingTest() {
     setMode(mode);
   }
 
+  let globalIndex = 0;
   useEffect(() => {
     if (state.status === "running") {
       const interval = setInterval(() => {
@@ -76,30 +78,55 @@ export function TypingTest() {
         />
         {/* Rendered Text */}
         <div className="flex flex-wrap max-w-5xl text-3xl break-keep whitespace-break-spaces font-semibold leading-relaxed tracking-wider custom-font">
-          {state.targetText.split("").map((char, index) => {
-            const charState = engine.getCharState(index);
-            const isCurrent = index === engine.getCurrentIndex();
-
-            let colorClass = "text-neutral-500";
-
-            if (charState === "correct") {
-              colorClass = "text-white";
-            } else if (charState === "incorrect") {
-              colorClass = "text-red-500";
+          {textArray.map((item: TransformedText) => {
+            if (item.type === "word") {
+              return (
+                <div key={item.wordIndex} className="px-3 text-neutral-400">
+                  {item.characters?.map((char) => {
+                    const charState = engine.getCharState(globalIndex);
+                    let colorClass = "text-neutral-400";
+                    globalIndex++;
+                    if (charState === "correct") {
+                      colorClass = "text-white";
+                    } else if (charState === "incorrect") {
+                      colorClass = "text-red-400";
+                    }
+                    return (
+                      <span
+                        key={globalIndex}
+                        className={`relative ${colorClass}`}
+                      >
+                        {char}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
             }
-
-            return (
-              <span key={index} className={`relative ${colorClass}`}>
-                {char === " " ? "\u00A0" : char}
-
-                {/* Cursor */}
-                {isCurrent && (
-                  <span className="absolute left-0 top-0 w-0.5 h-full bg-white animate-pulse" />
-                )}
-              </span>
-            );
           })}
-        </div>{" "}
+        </div>
+        {/* {state.targetText.split("").map((char, index) => { */}
+        {/*   const charState = engine.getCharState(index); */}
+        {/*   const isCurrent = index === engine.getCurrentIndex(); */}
+        {/**/}
+        {/*   let colorClass = "text-neutral-500"; */}
+        {/**/}
+        {/*   if (charState === "correct") { */}
+        {/*     colorClass = "text-white"; */}
+        {/*   } else if (charState === "incorrect") { */}
+        {/*     colorClass = "text-red-500"; */}
+        {/*   } */}
+        {/**/}
+        {/*   return ( */}
+        {/*     <span key={index} className={`relative ${colorClass}`}> */}
+        {/*       {char === " " ? "\u00A0" : char} */}
+        {/**/}
+        {/*       {isCurrent && ( */}
+        {/*         <span className="absolute left-0 top-0 w-0.5 h-full bg-white animate-pulse" /> */}
+        {/*       )} */}
+        {/*     </span> */}
+        {/*   ); */}
+        {/* })} */}
       </div>
 
       {/* Debug Info */}
