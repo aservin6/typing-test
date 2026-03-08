@@ -1,33 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { TimedMode } from "../core/engine/modes/TimedMode";
-import { TypingEngine } from "../core/engine/TypingEngine";
+import { useEffect } from "react";
 import { ModeSelect } from "./ModeSelect";
-import { StandardMode, StrictMode } from "../core/engine/modes";
-import TextRendering from "./TextRendering";
-
-const text = "hello world";
+import { useTypingStore } from "../store/useTypingStore";
+import TypingContainer from "./TypingContainer";
 
 export function TypingTest() {
-  const [mode, setMode] = useState("standard");
-  const engine = useMemo(() => {
-    switch (mode) {
-      case "timed":
-        return new TypingEngine(text, new TimedMode(30000));
-      case "strict":
-        return new TypingEngine(text, new StrictMode());
-      default:
-        return new TypingEngine(text, new StandardMode());
-    }
-  }, [mode]);
-
-  const [state, setState] = useState(engine.getState());
-  const timeLimit = engine.getTimeLimit();
-
-  function sync() {
-    setState({ ...engine.getState() });
-  }
+  const { engine, state, mode, handleCharacter, handleBackspace } =
+    useTypingStore();
+  const timeLimit = engine?.getTimeLimit();
 
   function handleInput(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (!engine) return;
     if (
       e.ctrlKey ||
       e.altKey ||
@@ -39,28 +21,23 @@ export function TypingTest() {
     }
 
     if (e.key === "Backspace") {
-      engine.handleBackspace();
+      handleBackspace();
     } else if (e.key.length === 1) {
       // Only accept printable characters
-      engine.handleCharacter(e.key);
+      handleCharacter(e.key);
     }
-    sync();
-  }
-
-  function handleModeChange(mode: string) {
-    setMode(mode);
   }
 
   useEffect(() => {
+    if (!engine || !state) return;
     if (state.status === "running") {
       const interval = setInterval(() => {
         engine.checkTime();
-        sync();
       }, 100);
 
       return () => clearInterval(interval);
     }
-  }, [engine, state.status, mode]);
+  }, [engine, state]);
 
   return (
     <div className="min-h-screen bg-neutral-800 font-mono flex flex-col items-center justify-center gap-8">
@@ -72,12 +49,12 @@ export function TypingTest() {
           className="absolute inset-0 opacity-0 z-50"
           autoFocus
         />
-        <TextRendering engine={engine} text={text} />
+        <TypingContainer />
       </div>
 
       {/* Debug Info */}
       <div className="text-red-400 font-bold text-xl">
-        status: {state.status}
+        status: {state?.status}
       </div>
 
       <div className="text-red-400 font-bold text-xl">mode: {mode}</div>
@@ -85,9 +62,9 @@ export function TypingTest() {
       <div className="text-red-400 font-bold text-xl">
         time left:{" "}
         {timeLimit &&
-          (timeLimit / 1000 - engine.getElapsedTime() / 1000).toFixed(2)}
+          (timeLimit / 1000 - engine?.getElapsedTime() / 1000).toFixed(2)}
       </div>
-      <ModeSelect onChange={handleModeChange} mode={mode} />
+      <ModeSelect />
     </div>
   );
 }

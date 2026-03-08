@@ -1,15 +1,18 @@
-import type { TypingEngine } from "../core/engine/TypingEngine";
+import { useEffect } from "react";
+import { useTypingStore } from "../store/useTypingStore";
+import { getEngineFromMode } from "../utils/get-engine-from-mode";
 import transformText from "../utils/transform-text";
+import { generateText } from "../utils/generate-text";
 
-export default function TextRendering({
-  engine,
-  text,
-}: {
-  engine: TypingEngine;
-  text: string;
-}) {
+export default function TypingContainer() {
+  const { engine, createEngine, mode } = useTypingStore();
+  const textArray = transformText(generateText());
   let globalIndex = 0;
-  const textArray = transformText(text);
+
+  useEffect(() => {
+    createEngine(getEngineFromMode(mode));
+  }, [mode, createEngine]);
+
   return (
     <div>
       {/* Rendered Text */}
@@ -18,7 +21,7 @@ export default function TextRendering({
           // SPACE
           if (item.type === "space") {
             const index = globalIndex++;
-            const isCurrent = index === engine.getCurrentIndex();
+            const isCurrent = index === engine?.getCurrentIndex();
 
             return (
               <span
@@ -40,8 +43,8 @@ export default function TextRendering({
                 {item.characters?.map((char, charIndex) => {
                   const index = globalIndex++;
 
-                  const charState = engine.getCharState(index);
-                  const isCurrent = index === engine.getCurrentIndex();
+                  const charState = engine?.getCharState(index);
+                  const isCurrent = index === engine?.getCurrentIndex();
 
                   const colorClass =
                     charState === "correct"

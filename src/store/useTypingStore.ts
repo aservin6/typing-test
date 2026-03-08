@@ -8,9 +8,11 @@ type TypingStore = {
   engine: TypingEngine | null;
   state: EngineState | null;
   mode: Mode;
+  getTimeLimit: () => void;
   createEngine: (engine: TypingEngine) => void;
   setMode: (mode: Mode) => void;
-  handleInput: (input: string) => void;
+  handleCharacter: (key: string) => void;
+  handleBackspace: () => void;
   start: () => void;
   reset: () => void;
 };
@@ -20,12 +22,25 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
   engine: null,
   state: null,
   mode: "standard",
-  createEngine: (engine) => set(() => ({ engine, state: engine.getState() })),
-  setMode: (mode) => set(() => ({ mode })),
-  handleInput: (input) => {
+  getTimeLimit: () => {
     const { engine } = get();
     if (!engine) return;
-    engine.handleCharacter(input);
+
+    return engine.getTimeLimit();
+  },
+  createEngine: (engine) => set(() => ({ engine, state: engine.getState() })),
+  setMode: (mode) => set(() => ({ mode })),
+  handleCharacter: (key) => {
+    const { engine } = get();
+    if (!engine) return;
+    engine.handleCharacter(key);
+
+    set({ state: engine.getState() });
+  },
+  handleBackspace: () => {
+    const { engine } = get();
+    if (!engine) return;
+    engine.handleBackspace();
 
     set({ state: engine.getState() });
   },
