@@ -6,7 +6,6 @@ import type { EngineState } from "./types";
 export class TypingEngine implements EngineContext {
   private state: EngineState;
   private strategy: TypingModeStrategy;
-  private startTime: number | null = null;
 
   constructor(targetText: string, strategy: TypingModeStrategy) {
     this.state = createInitialState(targetText);
@@ -47,8 +46,8 @@ export class TypingEngine implements EngineContext {
   }
 
   public getElapsedTime(): number {
-    if (!this.startTime) return 0;
-    return Date.now() - this.startTime;
+    if (!this.state.startTime) return 0;
+    return Date.now() - this.state.startTime;
   }
 
   // =========================
@@ -57,9 +56,8 @@ export class TypingEngine implements EngineContext {
 
   public start() {
     this.state.status = "running";
-    this.startTime = Date.now();
+    this.state.startTime = Date.now();
   }
-
   private finish() {
     this.state.status = "finished";
     this.state.endTime = Date.now();
@@ -67,7 +65,6 @@ export class TypingEngine implements EngineContext {
 
   public reset() {
     this.state = createInitialState(this.state.targetText);
-    this.startTime = null;
   }
 
   public checkTime() {

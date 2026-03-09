@@ -1,12 +1,11 @@
-import { useEffect } from "react";
 import { ModeSelect } from "./ModeSelect";
 import { useTypingStore } from "../store/useTypingStore";
 import TypingContainer from "./TypingContainer";
+import TypingTimer from "./TypingTimer";
 
 export function TypingTest() {
   const { engine, state, mode, handleCharacter, handleBackspace } =
     useTypingStore();
-  const timeLimit = engine?.getTimeLimit();
 
   function handleInput(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (!engine) return;
@@ -28,21 +27,11 @@ export function TypingTest() {
     }
   }
 
-  useEffect(() => {
-    if (!engine || !state) return;
-    if (state.status === "running") {
-      const interval = setInterval(() => {
-        engine.checkTime();
-      }, 100);
-
-      return () => clearInterval(interval);
-    }
-  }, [engine, state]);
-
   return (
     <div className="min-h-screen bg-neutral-800 font-mono flex flex-col items-center justify-center gap-8">
       {/* Typing Area */}
-      <div className="relative text-5xl font-bold">
+      <div className="relative font-bold">
+        <TypingTimer />
         {/* Hidden textarea */}
         <textarea
           onKeyDown={handleInput}
@@ -59,11 +48,6 @@ export function TypingTest() {
 
       <div className="text-red-400 font-bold text-xl">mode: {mode}</div>
 
-      <div className="text-red-400 font-bold text-xl">
-        time left:{" "}
-        {timeLimit &&
-          (timeLimit / 1000 - engine?.getElapsedTime() / 1000).toFixed(2)}
-      </div>
       <ModeSelect />
     </div>
   );
