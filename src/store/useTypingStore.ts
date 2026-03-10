@@ -4,12 +4,15 @@ import type { EngineState, Mode } from "../core/engine/types";
 import { getEngineFromMode } from "../utils/get-engine-from-mode";
 
 // Types of States & Actions
-type TypingStore = {
+type TypingState = {
   engine: TypingEngine | null;
   state: EngineState | null;
   mode: Mode;
   timeLimit: number;
   elapsedTime: number;
+};
+
+type TypingActions = {
   setTimeLimit: (timeLimit: number) => void;
   createEngine: (engine: TypingEngine) => void;
   setMode: (mode: Mode) => void;
@@ -20,6 +23,15 @@ type TypingStore = {
   tick: () => void;
 };
 
+type TypingStore = TypingState & TypingActions;
+
+function syncState(engine: TypingEngine) {
+  return {
+    state: { ...engine.getState() },
+    elapsedTime: engine.getElapsedTime(),
+  };
+}
+
 // States & Action values
 export const useTypingStore = create<TypingStore>()((set, get) => ({
   engine: null,
@@ -28,21 +40,21 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
   timeLimit: 30000,
   elapsedTime: 0,
   setTimeLimit: (timeLimit) => set(() => ({ timeLimit })),
-  createEngine: (engine) => set(() => ({ engine, state: engine.getState() })),
-  setMode: (mode) => set(() => ({ mode })),
+  createEngine: (engine) => set({ engine, ...syncState(engine) }),
+  setMode: (mode) => set({ mode }),
   handleCharacter: (key) => {
     const { engine } = get();
     if (!engine) return;
     engine.handleCharacter(key);
 
-    set({ state: engine.getState() });
+    set(syncState(engine));
   },
   handleBackspace: () => {
     const { engine } = get();
     if (!engine) return;
     engine.handleBackspace();
 
-    set({ state: engine.getState() });
+    set(syncState(engine));
   },
   start: () => {
     const { engine } = get();
@@ -50,7 +62,7 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
 
     engine.start();
 
-    set({ state: engine.getState() });
+    set(syncState(engine));
   },
   reset: () => {
     const { mode } = get();
@@ -60,8 +72,7 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
 
     set({
       engine: newEngine,
-      state: newEngine.getState(),
-      elapsedTime: 0,
+      ...syncState(newEngine),
     });
   },
   tick: () => {
@@ -71,9 +82,6 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
 
     engine.checkTime();
 
-    set({
-      state: engine.getState(),
-      elapsedTime: engine.getElapsedTime(),
-    });
+    set(syncState(engine));
   },
 }));
