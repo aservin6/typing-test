@@ -67,6 +67,7 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
   tick: () => {
     const { engine } = get();
     if (!engine) return;
+    if (get().mode !== "timed") return;
 
     engine.checkTime();
 

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useTypingStore } from "../store/useTypingStore";
+import { useTypingEngine } from "../hooks/useTypingEngine";
 
 export default function TypingTimer() {
-  const { tick, state, elapsedTime, timeLimit } = useTypingStore();
+  const { tick, state, elapsedTime, timeLimit, mode } = useTypingEngine();
   const remainingTime = timeLimit - elapsedTime;
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export default function TypingTimer() {
 
   return (
     <>
-      {state?.status === "running" && (
+      {state?.status === "running" && mode === "timed" && (
         <div className="absolute -top-full text-red-300 text-3xl left-0">
           {Math.floor(remainingTime / 1000)}
         </div>

@@ -1,14 +1,13 @@
 import { ModeSelect } from "./ModeSelect";
-import { useTypingStore } from "../store/useTypingStore";
 import TypingContainer from "./TypingContainer";
 import TypingTimer from "./TypingTimer";
+import { useTypingEngine } from "../hooks/useTypingEngine";
 
 export function TypingTest() {
-  const { engine, state, mode, handleCharacter, handleBackspace } =
-    useTypingStore();
+  const { state, mode, handleCharacter, handleBackspace } = useTypingEngine();
 
   function handleInput(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (!engine) return;
+    if (!state) return;
     if (
       e.ctrlKey ||
       e.altKey ||

@@ -1,8 +1,8 @@
 import type { Mode } from "../core/engine/types";
-import { useTypingStore } from "../store/useTypingStore";
+import { useTypingEngine } from "../hooks/useTypingEngine";
 
 export function ModeSelect() {
-  const { mode, setMode } = useTypingStore();
+  const { mode, setMode } = useTypingEngine();
 
   function handleChange(mode: Mode) {
     setMode(mode);

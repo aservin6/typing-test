@@ -1,17 +1,15 @@
-import { useEffect, useMemo } from "react";
-import { useTypingStore } from "../store/useTypingStore";
-import { getEngineFromMode } from "../utils/get-engine-from-mode";
+import { useMemo } from "react";
 import transformText from "../utils/transform-text";
 import { generateText } from "../utils/generate-text";
+import { useCreateEngine } from "../hooks/useCreateEngine";
+import { useTypingStore } from "../store/useTypingStore";
 
 export default function TypingContainer() {
-  const { engine, createEngine, mode } = useTypingStore();
+  const { engine } = useTypingStore();
   const textArray = useMemo(() => transformText(generateText()), []);
   let globalIndex = 0;
 
-  useEffect(() => {
-    createEngine(getEngineFromMode(mode));
-  }, [mode, createEngine]);
+  useCreateEngine();
 
   return (
     <div>
