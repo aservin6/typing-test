@@ -5,7 +5,7 @@ import { useTypingEngine } from "../hooks/useTypingEngine";
 import { useInitializeEngine } from "../hooks/useInitializeEngine";
 
 export default function TypingContainer() {
-  const { engine, state } = useTypingEngine();
+  const { state } = useTypingEngine();
   const textArray = useMemo(() => transformText(generateText()), []);
   let globalIndex = 0;
 
@@ -39,9 +39,8 @@ export default function TypingContainer() {
             return (
               <div key={`word-${item.wordIndex}`} className="inline-flex">
                 {item.characters?.map((char, charIndex) => {
+                  const charState = state?.charStates[globalIndex];
                   const index = globalIndex++;
-
-                  const charState = engine?.getCharState(index);
                   const isCurrent = index === state?.input.length;
 
                   const colorClass =

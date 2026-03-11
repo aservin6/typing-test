@@ -6,6 +6,7 @@ import type { EngineState } from "./types";
 export class TypingEngine implements EngineContext {
   private state: EngineState;
   private strategy: TypingModeStrategy;
+  private listeners: Set<(state: EngineState) => void> = new Set();
 
   constructor(targetText: string, strategy: TypingModeStrategy) {
     this.state = createInitialState(targetText);
@@ -29,13 +30,8 @@ export class TypingEngine implements EngineContext {
     return this.state.input.length;
   }
 
-  public getCharState(index: number): "pending" | "correct" | "incorrect" {
-    if (index >= this.state.input.length) return "pending";
-
-    const expected = this.state.targetText[index];
-    const actual = this.state.input[index];
-
-    return expected === actual ? "correct" : "incorrect";
+  public getCharState(index: number) {
+    return this.state.charStates[index];
   }
 
   public getTimeLimit(): number | null {
@@ -57,19 +53,38 @@ export class TypingEngine implements EngineContext {
   public start() {
     this.state.status = "running";
     this.state.startTime = Date.now();
+    this.emit();
   }
   private finish() {
     this.state.status = "finished";
     this.state.endTime = Date.now();
+    this.emit();
   }
 
   public reset() {
     this.state = createInitialState(this.state.targetText);
+    this.emit();
   }
 
   public checkTime() {
     if (this.strategy.shouldFinishOnTick(this)) {
       this.finish();
+    }
+  }
+
+  public subscribe(listener: (state: EngineState) => void) {
+    this.listeners.add(listener);
+
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private emit() {
+    const snapshot = { ...this.state };
+
+    for (const listener of this.listeners) {
+      listener(snapshot);
     }
   }
 
@@ -84,21 +99,30 @@ export class TypingEngine implements EngineContext {
       this.start();
     }
 
-    // Ignore input beyond target length
-    if (this.state.input.length > this.state.targetText.length) return;
+    const index = this.state.input.length;
 
-    if (
-      char !== this.state.targetText.at(this.getCurrentIndex()) &&
-      this.strategy.shouldFinishOnCharacter(this, "incorrect")
-    ) {
-      this.finish();
+    // Ignore input beyond target length
+    if (index > this.state.targetText.length) return;
+
+    const expected = this.state.targetText[index];
+
+    if (char === expected) {
+      this.state.charStates[index] = "correct";
+      this.state.correctCount++;
+    } else {
+      this.state.charStates[index] = "incorrect";
+      this.state.incorrectCount++;
     }
 
     this.state.input += char;
 
-    if (this.strategy.shouldFinishOnCharacter(this, "correct")) {
+    if (
+      this.strategy.shouldFinishOnCharacter(this, this.state.charStates[index])
+    ) {
       this.finish();
     }
+
+    this.emit();
   }
 
   public handleBackspace() {
@@ -108,7 +132,17 @@ export class TypingEngine implements EngineContext {
       return;
     }
 
+    const index = this.state.input.length - 1;
+
+    const previousState = this.state.charStates[index];
+
+    if (previousState === "correct") this.state.correctCount--;
+    if (previousState === "incorrect") this.state.incorrectCount--;
+
+    this.state.charStates[index] = "pending";
     this.state.input = this.state.input.slice(0, -1);
+
+    this.emit();
   }
 
   // =========================

@@ -10,6 +10,7 @@ type TypingState = {
   mode: Mode;
   timeLimit: number;
   elapsedTime: number;
+  engineUnsubscribe: (() => void) | null;
 };
 
 type TypingActions = {
@@ -39,49 +40,53 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
   mode: "standard",
   timeLimit: 30000,
   elapsedTime: 0,
+  engineUnsubscribe: null,
   setTimeLimit: (timeLimit) => set(() => ({ timeLimit })),
-  setEngine: (engine: TypingEngine) => set({ engine, ...syncState(engine) }),
+  setEngine: (engine: TypingEngine) => {
+    const { engineUnsubscribe } = get();
+
+    // cleanup old engine subscription
+    engineUnsubscribe?.();
+
+    const unsubscribe = engine.subscribe((state) => {
+      set({
+        state,
+        elapsedTime: engine.getElapsedTime(),
+      });
+    });
+
+    set({
+      engine,
+      ...syncState(engine),
+      engineUnsubscribe: unsubscribe,
+    });
+  },
   setMode: (mode) => set({ mode }),
   handleCharacter: (key) => {
     const { engine } = get();
-    if (!engine) return;
-    engine.handleCharacter(key);
-
-    set(syncState(engine));
+    engine?.handleCharacter(key);
   },
   handleBackspace: () => {
     const { engine } = get();
-    if (!engine) return;
-    engine.handleBackspace();
-
-    set(syncState(engine));
+    engine?.handleBackspace();
   },
   start: () => {
     const { engine } = get();
-    if (!engine) return;
 
-    engine.start();
-
-    set(syncState(engine));
+    engine?.start();
   },
   reset: () => {
-    const { mode } = get();
+    const { mode, setEngine } = get();
 
     // create new engine instance
     const newEngine = getEngineFromMode(mode);
 
-    set({
-      engine: newEngine,
-      ...syncState(newEngine),
-    });
+    setEngine(newEngine);
   },
   tick: () => {
-    const { engine } = get();
-    if (!engine) return;
-    if (get().mode !== "timed") return;
+    const { engine, mode } = get();
+    if (mode !== "timed") return;
 
-    engine.checkTime();
-
-    set(syncState(engine));
+    engine?.checkTime();
   },
 }));
