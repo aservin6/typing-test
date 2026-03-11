@@ -1,6 +1,7 @@
 import { useTypingStore } from "../store/useTypingStore";
 
 export function useTypingEngine() {
+  const engine = useTypingStore((s) => s.engine);
   const state = useTypingStore((s) => s.state);
   const elapsedTime = useTypingStore((s) => s.elapsedTime);
   const mode = useTypingStore((s) => s.mode);
@@ -9,6 +10,7 @@ export function useTypingEngine() {
   const handleCharacter = useTypingStore((s) => s.handleCharacter);
   const handleBackspace = useTypingStore((s) => s.handleBackspace);
   const setMode = useTypingStore((s) => s.setMode);
+  const setEngine = useTypingStore((s) => s.setEngine);
   const setTimeLimit = useTypingStore((s) => s.setTimeLimit);
 
   const start = useTypingStore((s) => s.start);
@@ -16,11 +18,13 @@ export function useTypingEngine() {
   const tick = useTypingStore((s) => s.tick);
 
   return {
+    engine,
     state,
     elapsedTime,
     mode,
     timeLimit,
     setMode,
+    setEngine,
     setTimeLimit,
     handleCharacter,
     handleBackspace,

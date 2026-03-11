@@ -14,7 +14,7 @@ type TypingState = {
 
 type TypingActions = {
   setTimeLimit: (timeLimit: number) => void;
-  createEngine: (engine: TypingEngine) => void;
+  setEngine: (engine: TypingEngine) => void;
   setMode: (mode: Mode) => void;
   handleCharacter: (key: string) => void;
   handleBackspace: () => void;
@@ -40,7 +40,7 @@ export const useTypingStore = create<TypingStore>()((set, get) => ({
   timeLimit: 30000,
   elapsedTime: 0,
   setTimeLimit: (timeLimit) => set(() => ({ timeLimit })),
-  createEngine: (engine) => set({ engine, ...syncState(engine) }),
+  setEngine: (engine: TypingEngine) => set({ engine, ...syncState(engine) }),
   setMode: (mode) => set({ mode }),
   handleCharacter: (key) => {
     const { engine } = get();

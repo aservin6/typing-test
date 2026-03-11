@@ -1,15 +1,15 @@
 import { useMemo } from "react";
 import transformText from "../utils/transform-text";
 import { generateText } from "../utils/generate-text";
-import { useCreateEngine } from "../hooks/useCreateEngine";
-import { useTypingStore } from "../store/useTypingStore";
+import { useTypingEngine } from "../hooks/useTypingEngine";
+import { useInitializeEngine } from "../hooks/useInitializeEngine";
 
 export default function TypingContainer() {
-  const { engine } = useTypingStore();
+  const { engine, state } = useTypingEngine();
   const textArray = useMemo(() => transformText(generateText()), []);
   let globalIndex = 0;
 
-  useCreateEngine();
+  useInitializeEngine();
 
   return (
     <div>
@@ -19,7 +19,7 @@ export default function TypingContainer() {
           // SPACE
           if (item.type === "space") {
             const index = globalIndex++;
-            const isCurrent = index === engine?.getCurrentIndex();
+            const isCurrent = index === state?.input.length;
 
             return (
               <span
@@ -42,7 +42,7 @@ export default function TypingContainer() {
                   const index = globalIndex++;
 
                   const charState = engine?.getCharState(index);
-                  const isCurrent = index === engine?.getCurrentIndex();
+                  const isCurrent = index === state?.input.length;
 
                   const colorClass =
                     charState === "correct"
